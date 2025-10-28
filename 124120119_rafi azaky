@@ -1,0 +1,41 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.interpolate import griddata
+
+# ====== 1. Data survei geomagnetik ======
+data = pd.DataFrame({
+    'X': [0, 0, 50, 50, 100, 100],
+    'Y': [0, 50, 0, 50, 0, 50],
+    'Total_Field': [43210, 43280, 43100, 43420, 43050, 43500]
+})
+
+# ====== 2. Hitung nilai anomali ======
+# Anomali = Total_Field - rata-rata total medan
+mean_field = data['Total_Field'].mean()
+data['Anomali'] = data['Total_Field'] - mean_field
+
+# ====== 3. Membuat grid interpolasi ======
+x = np.linspace(data['X'].min(), data['X'].max(), 100)
+y = np.linspace(data['Y'].min(), data['Y'].max(), 100)
+Xgrid, Ygrid = np.meshgrid(x, y)
+
+# Interpolasi nilai anomali agar permukaan halus
+Zgrid = griddata(
+    (data['X'], data['Y']),
+    data['Anomali'],
+    (Xgrid, Ygrid),
+    method='cubic'
+)
+
+# ====== 4. Visualisasi peta kontur ======
+plt.figure(figsize=(8, 6))
+contour = plt.contourf(Xgrid, Ygrid, Zgrid, levels=20, cmap='seismic')  # biru-merah = anomali
+plt.scatter(data['X'], data['Y'], color='black', label='Titik Pengukuran')
+plt.colorbar(contour, label='Anomali Magnetik (nT)')
+plt.title('Peta Kontur Anomali Magnetik')
+plt.xlabel('X (m)')
+plt.ylabel('Y (m)')
+plt.legend()
+plt.grid(True)
+plt.show()
