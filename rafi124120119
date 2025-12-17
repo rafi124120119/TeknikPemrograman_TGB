@@ -1,0 +1,98 @@
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+
+# =========================
+# KONFIGURASI HALAMAN
+# =========================
+st.set_page_config(page_title="Peta Anomali Magnetik", layout="wide")
+st.title("🧲 Visualisasi Peta Anomali Magnetik")
+
+# =========================
+# DATA CONTOH (GRID MAGNETIK)
+# =========================
+np.random.seed(42)
+nx, ny = 50, 50
+x = np.linspace(0, 1000, nx)
+y = np.linspace(0, 1000, ny)
+X, Y = np.meshgrid(x, y)
+
+anomali_observasi = np.random.normal(0, 50, (ny, nx))
+anomali_regional = np.random.normal(0, 20, (ny, nx))
+anomali_residual = anomali_observasi - anomali_regional
+
+# =========================
+# SIDEBAR KONTROL
+# =========================
+st.sidebar.header("⚙️ Pengaturan Visualisasi")
+
+# Pilihan colormap
+cmap = st.sidebar.selectbox(
+    "Pilih Colormap",
+    ["seismic", "jet", "viridis", "plasma", "coolwarm"]
+)
+
+# Mode skala
+mode_skala = st.sidebar.radio(
+    "Mode Skala",
+    ["Auto Scale", "Manual Scale"]
+)
+
+# Slider vmin & vmax
+vmin = st.sidebar.slider("Nilai Minimum (vmin)", -100.0, 0.0, -50.0)
+vmax = st.sidebar.slider("Nilai Maksimum (vmax)", 0.0, 100.0, 50.0)
+
+# Tombol simpan
+simpan_gambar = st.sidebar.checkbox("Simpan plot sebagai gambar")
+
+# =========================
+# FUNGSI PLOT
+# =========================
+def plot_peta(data, judul, nama_file):
+    fig, ax = plt.subplots(figsize=(5, 4))
+
+    if mode_skala == "Auto Scale":
+        im = ax.imshow(data, cmap=cmap, origin="lower")
+    else:
+        im = ax.imshow(data, cmap=cmap, origin="lower",
+                       vmin=vmin, vmax=vmax)
+
+    ax.set_title(judul)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    plt.colorbar(im, ax=ax, shrink=0.8)
+
+    if simpan_gambar:
+        plt.savefig(nama_file, dpi=300)
+
+    st.pyplot(fig)
+
+# =========================
+# TAMPILAN PETA
+# =========================
+st.subheader("📊 Peta Anomali Magnetik")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    plot_peta(
+        anomali_observasi,
+        "Anomali Magnetik Observasi",
+        "anomali_observasi.png"
+    )
+
+with col2:
+    plot_peta(
+        anomali_regional,
+        "Anomali Magnetik Regional",
+        "anomali_regional.png"
+    )
+
+with col3:
+    plot_peta(
+        anomali_residual,
+        "Anomali Magnetik Residual",
+        "anomali_residual.png"
+    )
+
+st.success("Visualisasi selesai ditampilkan.")
