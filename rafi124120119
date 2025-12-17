@@ -1,0 +1,60 @@
+!pip install streamlit
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+
+# =========================
+# DATA CONTOH
+# =========================
+np.random.seed(42)
+n_time = 500
+n_trace = 30
+
+time = np.linspace(0, 5, n_time)
+data = np.random.normal(0, 1, (n_time, n_trace))
+
+# =========================
+# PARAMETER (GANTI MANUAL)
+# =========================
+cmap = "seismic"     # pilihan: seismic, viridis, plasma
+auto_scale = False
+vmin, vmax = -2, 2
+invert_time = True
+trace_min, trace_max = 0, 29
+
+# =========================
+# FILTER DATA
+# =========================
+data_plot = data[:, trace_min:trace_max + 1]
+
+# =========================
+# PLOTTING
+# =========================
+plt.figure(figsize=(10, 6))
+
+if auto_scale:
+    plt.imshow(
+        data_plot,
+        aspect="auto",
+        cmap=cmap,
+        extent=[trace_min, trace_max, time[-1], time[0]]
+    )
+else:
+    plt.imshow(
+        data_plot,
+        aspect="auto",
+        cmap=cmap,
+        vmin=vmin,
+        vmax=vmax,
+        extent=[trace_min, trace_max, time[-1], time[0]]
+    )
+
+if invert_time:
+    plt.gca().invert_yaxis()
+
+plt.colorbar(label="Amplitudo")
+plt.xlabel("Trace")
+plt.ylabel("Waktu (s)")
+plt.title("Penampang Data Seismik")
+plt.grid(False)
+plt.show()
